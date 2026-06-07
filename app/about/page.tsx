@@ -5,6 +5,13 @@ import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
 
 type Milestone = { year: string; title: string; description: string };
+type Value = { title: string; description: string };
+
+const DEFAULT_VALUES: Value[] = [
+  { title: "正しい知識", description: "スロセに関する情報は、根拠のある知識に基づいてお届けします。感覚ではなく、理解から変化を起こすことを大切にします。" },
+  { title: "女性の視点", description: "「女性は水の性」という概念を軸に、20〜30代の女性が本当に必要としている情報を、女性の視点からお届けします。" },
+  { title: "安心できる場", description: "スロセについて安心して学べる場を作ることが使命です。18歳以上の方を対象に、丁寧で誠実な情報発信を続けます。" },
+];
 
 const DEFAULT_MILESTONES: Milestone[] = [
   { year: "2019", title: "スロセとの出会い", description: "自身のパートナーシップへの悩みをきっかけに研究を始める。" },
@@ -22,6 +29,7 @@ const ABOUT_QUERY = `*[_type == "about" && _id == "about-page"][0]{
   missionTitle,
   missionText1,
   missionText2,
+  values[]{ title, description },
   milestones[]{ year, title, description }
 }`;
 
@@ -34,10 +42,11 @@ type AboutData = {
   missionTitle?: string;
   missionText1?: string;
   missionText2?: string;
+  values?: Value[];
   milestones?: Milestone[];
 };
 
-const DEFAULTS: Required<Omit<AboutData, 'milestones'>> = {
+const DEFAULTS: Required<Omit<AboutData, 'values' | 'milestones'>> = {
   name: "瀬戸優結",
   nameRomaji: "SETO YUYU",
   profileImage: { asset: { _ref: "" } },
@@ -62,6 +71,9 @@ export default async function AboutPage() {
   const missionTitle = data?.missionTitle || DEFAULTS.missionTitle;
   const missionText1 = data?.missionText1 || DEFAULTS.missionText1;
   const missionText2 = data?.missionText2 || DEFAULTS.missionText2;
+  const values = (data?.values && data.values.length > 0)
+    ? data.values
+    : DEFAULT_VALUES;
   const milestones = (data?.milestones && data.milestones.length > 0)
     ? data.milestones
     : DEFAULT_MILESTONES;
@@ -185,20 +197,7 @@ export default async function AboutPage() {
             <div className="mx-auto rounded-full w-10 h-[3px] bg-gold" />
           </div>
           <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                title: "正しい知識",
-                body: "スロセに関する情報は、根拠のある知識に基づいてお届けします。感覚ではなく、理解から変化を起こすことを大切にします。",
-              },
-              {
-                title: "女性の視点",
-                body: "「女性は水の性」という概念を軸に、20〜30代の女性が本当に必要としている情報を、女性の視点からお届けします。",
-              },
-              {
-                title: "安心できる場",
-                body: "スロセについて安心して学べる場を作ることが使命です。18歳以上の方を対象に、丁寧で誠実な情報発信を続けます。",
-              },
-            ].map((val) => (
+            {values.map((val) => (
               <div
                 key={val.title}
                 className="rounded-2xl p-8 border-t-4 border-gold shadow-sm"
@@ -208,7 +207,7 @@ export default async function AboutPage() {
                   {val.title}
                 </h3>
                 <p className="text-sm leading-relaxed text-deep-teal/65">
-                  {val.body}
+                  {val.description}
                 </p>
               </div>
             ))}

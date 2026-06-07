@@ -60,6 +60,23 @@ export const aboutType = defineType({
       rows: 4,
     }),
     defineField({
+      name: 'values',
+      title: '大切にしていること（Values）',
+      type: 'array',
+      of: [
+        defineArrayMember({
+          type: 'object',
+          fields: [
+            defineField({ name: 'title', title: 'タイトル', type: 'string' }),
+            defineField({ name: 'description', title: '説明文', type: 'text', rows: 3 }),
+          ],
+          preview: {
+            select: { title: 'title', subtitle: 'description' },
+          },
+        }),
+      ],
+    }),
+    defineField({
       name: 'milestones',
       title: '活動の歩み（History）',
       type: 'array',
