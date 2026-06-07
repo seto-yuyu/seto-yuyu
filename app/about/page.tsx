@@ -4,11 +4,13 @@ import { LineIcon, AgeIcon, ArrowIcon } from "../components/icons";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
 
-const milestones = [
-  { year: "2019", label: "スロセとの出会い。自身のパートナーシップへの悩みをきっかけに研究を始める。" },
-  { year: "2021", label: "SNSでスロセ情報の発信を開始。フォロワーが急増し、多くの女性から共感の声が届く。" },
-  { year: "2023", label: "オンラインワークショップを初開催。参加者から「関係性が変わった」という声が続出。" },
-  { year: "2025", label: "本サイトを立ち上げ、1000万人の女性にスロセを届けるミッションを宣言。" },
+type Milestone = { year: string; title: string; description: string };
+
+const DEFAULT_MILESTONES: Milestone[] = [
+  { year: "2019", title: "スロセとの出会い", description: "自身のパートナーシップへの悩みをきっかけに研究を始める。" },
+  { year: "2021", title: "SNS発信を開始", description: "スロセ情報の発信を開始。フォロワーが急増し、多くの女性から共感の声が届く。" },
+  { year: "2023", title: "ワークショップ初開催", description: "オンラインワークショップを初開催。参加者から「関係性が変わった」という声が続出。" },
+  { year: "2025", title: "本サイト立ち上げ", description: "本サイトを立ち上げ、1000万人の女性にスロセを届けるミッションを宣言。" },
 ];
 
 const ABOUT_QUERY = `*[_type == "about" && _id == "about-page"][0]{
@@ -19,7 +21,8 @@ const ABOUT_QUERY = `*[_type == "about" && _id == "about-page"][0]{
   profileText2,
   missionTitle,
   missionText1,
-  missionText2
+  missionText2,
+  milestones[]{ year, title, description }
 }`;
 
 type AboutData = {
@@ -31,9 +34,10 @@ type AboutData = {
   missionTitle?: string;
   missionText1?: string;
   missionText2?: string;
+  milestones?: Milestone[];
 };
 
-const DEFAULTS: Required<AboutData> = {
+const DEFAULTS: Required<Omit<AboutData, 'milestones'>> = {
   name: "瀬戸優結",
   nameRomaji: "SETO YUYU",
   profileImage: { asset: { _ref: "" } },
@@ -58,6 +62,9 @@ export default async function AboutPage() {
   const missionTitle = data?.missionTitle || DEFAULTS.missionTitle;
   const missionText1 = data?.missionText1 || DEFAULTS.missionText1;
   const missionText2 = data?.missionText2 || DEFAULTS.missionText2;
+  const milestones = (data?.milestones && data.milestones.length > 0)
+    ? data.milestones
+    : DEFAULT_MILESTONES;
   const profileImageUrl =
     data?.profileImage?.asset?._ref
       ? urlFor(data.profileImage).width(640).height(640).fit("crop").url()
@@ -231,9 +238,14 @@ export default async function AboutPage() {
                 <div className="shrink-0 text-2xl font-black text-gold">
                   {m.year}
                 </div>
-                <p className="text-deep-teal/70 text-sm leading-relaxed pt-1">
-                  {m.label}
-                </p>
+                <div className="pt-1">
+                  {m.title && (
+                    <p className="text-deep-teal font-bold text-sm mb-1">{m.title}</p>
+                  )}
+                  <p className="text-deep-teal/70 text-sm leading-relaxed">
+                    {m.description}
+                  </p>
+                </div>
               </div>
             ))}
           </div>

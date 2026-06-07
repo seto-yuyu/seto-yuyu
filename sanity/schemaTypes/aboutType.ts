@@ -1,5 +1,5 @@
 import { UserIcon } from '@sanity/icons'
-import { defineField, defineType } from 'sanity'
+import { defineArrayMember, defineField, defineType } from 'sanity'
 
 export const aboutType = defineType({
   name: 'about',
@@ -58,6 +58,24 @@ export const aboutType = defineType({
       title: 'ミッション文（2段落目）',
       type: 'text',
       rows: 4,
+    }),
+    defineField({
+      name: 'milestones',
+      title: '活動の歩み（History）',
+      type: 'array',
+      of: [
+        defineArrayMember({
+          type: 'object',
+          fields: [
+            defineField({ name: 'year', title: '年', type: 'string' }),
+            defineField({ name: 'title', title: 'タイトル', type: 'string' }),
+            defineField({ name: 'description', title: '説明文', type: 'text', rows: 3 }),
+          ],
+          preview: {
+            select: { title: 'year', subtitle: 'title' },
+          },
+        }),
+      ],
     }),
   ],
   preview: {
