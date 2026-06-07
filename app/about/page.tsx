@@ -1,5 +1,8 @@
+import Image from "next/image";
 import { PageShell } from "../components/PageShell";
 import { LineIcon, AgeIcon, ArrowIcon } from "../components/icons";
+import { client } from "@/sanity/lib/client";
+import { urlFor } from "@/sanity/lib/image";
 
 const milestones = [
   { year: "2019", label: "スロセとの出会い。自身のパートナーシップへの悩みをきっかけに研究を始める。" },
@@ -8,7 +11,59 @@ const milestones = [
   { year: "2025", label: "本サイトを立ち上げ、1000万人の女性にスロセを届けるミッションを宣言。" },
 ];
 
-export default function AboutPage() {
+const ABOUT_QUERY = `*[_type == "about" && _id == "about-page"][0]{
+  name,
+  nameRomaji,
+  profileImage,
+  profileText1,
+  profileText2,
+  missionTitle,
+  missionText1,
+  missionText2
+}`;
+
+type AboutData = {
+  name?: string;
+  nameRomaji?: string;
+  profileImage?: { asset: { _ref: string }; alt?: string };
+  profileText1?: string;
+  profileText2?: string;
+  missionTitle?: string;
+  missionText1?: string;
+  missionText2?: string;
+};
+
+const DEFAULTS: Required<AboutData> = {
+  name: "瀬戸優結",
+  nameRomaji: "SETO YUYU",
+  profileImage: { asset: { _ref: "" } },
+  profileText1:
+    "「1000万人の女性にスロセを届ける」をミッションに活動するスロセ教育者・情報発信者。20〜30代の女性を中心に、パートナーとの関係性・絆を深めるための知識を届けています。",
+  profileText2:
+    "自身のパートナーシップへの悩みをきっかけにスロセと出会い、その知識が関係性を根本から変えた体験から、同じ悩みを持つ女性たちへの情報発信を始めました。",
+  missionTitle: "1000万人の女性に\nスロセを届ける",
+  missionText1:
+    "日本の女性の満足度向上を目指して——。スロセという知識が一人でも多くの女性に届くことで、パートナーとの関係性が変わり、人生そのものが豊かになると信じています。",
+  missionText2:
+    "「知ると、変わる。」この言葉は私自身の体験から生まれました。スロセを知る前と後では、パートナーとの関係性はまったく異なるものになりました。その変化を、1000万人の女性と分かち合いたいと思っています。",
+};
+
+export default async function AboutPage() {
+  const data: AboutData | null = await client.fetch(ABOUT_QUERY, {}, { next: { revalidate: 60 } });
+
+  const name = data?.name || DEFAULTS.name;
+  const nameRomaji = data?.nameRomaji || DEFAULTS.nameRomaji;
+  const profileText1 = data?.profileText1 || DEFAULTS.profileText1;
+  const profileText2 = data?.profileText2 || DEFAULTS.profileText2;
+  const missionTitle = data?.missionTitle || DEFAULTS.missionTitle;
+  const missionText1 = data?.missionText1 || DEFAULTS.missionText1;
+  const missionText2 = data?.missionText2 || DEFAULTS.missionText2;
+  const profileImageUrl =
+    data?.profileImage?.asset?._ref
+      ? urlFor(data.profileImage).width(640).height(640).fit("crop").url()
+      : null;
+  const profileImageAlt = data?.profileImage?.alt || name;
+
   return (
     <PageShell>
       {/* ========== Hero ========== */}
@@ -39,37 +94,53 @@ export default function AboutPage() {
                 PROFILE
               </p>
               <h1 className="text-4xl md:text-6xl font-black text-deep-teal mb-4 leading-tight">
-                瀬戸優結
+                {name}
                 <span className="block text-xl md:text-2xl font-bold text-deep-teal/50 mt-2 tracking-widest">
-                  SETO YUYU
+                  {nameRomaji}
                 </span>
               </h1>
               <div className="w-10 h-[3px] bg-gold rounded-full mb-6" />
               <p className="text-deep-teal/70 text-base leading-relaxed mb-4">
-                「1000万人の女性にスロセを届ける」をミッションに活動するスロセ教育者・情報発信者。20〜30代の女性を中心に、パートナーとの関係性・絆を深めるための知識を届けています。
+                {profileText1}
               </p>
               <p className="text-deep-teal/70 text-base leading-relaxed">
-                自身のパートナーシップへの悩みをきっかけにスロセと出会い、その知識が関係性を根本から変えた体験から、同じ悩みを持つ女性たちへの情報発信を始めました。
+                {profileText2}
               </p>
             </div>
             <div className="flex justify-center">
-              <div
-                className="w-64 h-64 md:w-80 md:h-80 rounded-full flex items-center justify-center"
-                style={{
-                  background: "linear-gradient(135deg, #EAF3F7 0%, #FDF6E3 100%)",
-                  border: "3px solid rgba(200,169,110,0.3)",
-                }}
-              >
-                <div className="text-center">
-                  <div
-                    className="text-8xl font-black leading-none mb-2"
-                    style={{ color: "rgba(200,169,110,0.2)" }}
-                  >
-                    瀬
-                  </div>
-                  <p className="text-deep-teal font-bold text-sm">瀬戸優結</p>
+              {profileImageUrl ? (
+                <div
+                  className="w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden"
+                  style={{ border: "3px solid rgba(200,169,110,0.3)" }}
+                >
+                  <Image
+                    src={profileImageUrl}
+                    alt={profileImageAlt}
+                    width={320}
+                    height={320}
+                    className="w-full h-full object-cover"
+                    priority
+                  />
                 </div>
-              </div>
+              ) : (
+                <div
+                  className="w-64 h-64 md:w-80 md:h-80 rounded-full flex items-center justify-center"
+                  style={{
+                    background: "linear-gradient(135deg, #EAF3F7 0%, #FDF6E3 100%)",
+                    border: "3px solid rgba(200,169,110,0.3)",
+                  }}
+                >
+                  <div className="text-center">
+                    <div
+                      className="text-8xl font-black leading-none mb-2"
+                      style={{ color: "rgba(200,169,110,0.2)" }}
+                    >
+                      瀬
+                    </div>
+                    <p className="text-deep-teal font-bold text-sm">{name}</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -81,17 +152,15 @@ export default function AboutPage() {
           <p className="text-xs font-bold tracking-[0.25em] mb-3 text-gold">
             MISSION
           </p>
-          <h2 className="text-3xl md:text-4xl font-black text-deep-teal mb-4">
-            1000万人の女性に
-            <br />
-            スロセを届ける
+          <h2 className="text-3xl md:text-4xl font-black text-deep-teal mb-4 whitespace-pre-line">
+            {missionTitle}
           </h2>
           <div className="mx-auto rounded-full w-10 h-[3px] bg-gold mb-8" />
           <p className="text-deep-teal/70 text-base leading-relaxed mb-6 max-w-2xl mx-auto">
-            日本の女性の満足度向上を目指して——。スロセという知識が一人でも多くの女性に届くことで、パートナーとの関係性が変わり、人生そのものが豊かになると信じています。
+            {missionText1}
           </p>
           <p className="text-deep-teal/70 text-base leading-relaxed max-w-2xl mx-auto">
-            「知ると、変わる。」この言葉は私自身の体験から生まれました。スロセを知る前と後では、パートナーとの関係性はまったく異なるものになりました。その変化を、1000万人の女性と分かち合いたいと思っています。
+            {missionText2}
           </p>
         </div>
       </section>
