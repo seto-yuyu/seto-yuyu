@@ -11,7 +11,7 @@ const notoSansJP = Noto_Sans_JP({
 
 export const metadata: Metadata = {
   title: "瀬戸優結｜1000万人の女性にスロセを届ける",
-  description: "知ると、変わる。スロット戦術（スロセ）の知識で、あなたのスロットとの向き合い方を根本から変えます。18歳以上限定。",
+  description: "パートナーとの絆を深める「スロセ」の知識が、あなたの関係性を根本から変えます。20〜30代女性向け・18歳以上限定。",
 };
 
 export default function RootLayout({
